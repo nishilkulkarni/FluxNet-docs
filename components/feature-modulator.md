@@ -10,7 +10,7 @@ nav_order: 1
 The `FeatureModulator` class is a neural network module that transforms edge features to modulate node features.
 
 ## Purpose
-- Acts as the ψ function mentioned in the paper
+- Acts as the continuos convolution kernel
 - Transforms edge features into weights that will be applied to node features
 
 ## Parameters
