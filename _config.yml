@@ -1,0 +1,22 @@
+remote_theme: just-the-docs/just-the-docs
+title: FluxNet Documentation
+description: Documentation for FluxNet Graph Neural Network Layer
+color_scheme: dark
+
+# Enable search
+search_enabled: true
+
+# Enable content anchors
+heading_anchors: true
+
+# Back to top link
+back_to_top: true
+back_to_top_text: "Back to top"
+
+# Footer content
+footer_content: "Copyright &copy; 2025 Nishil Kulkarni. Distributed under the <a href=\"https://github.com/nishilkulkarni/FluxNet-docs/blob/main/LICENSE\">MIT License."
+
+# Aux links for upper right navigation
+aux_links:
+  "FluxNet on GitHub":
+    - "//github.com/nishilkulkarni/FluxNet"
