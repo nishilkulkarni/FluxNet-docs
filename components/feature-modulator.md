@@ -44,3 +44,4 @@ class FeatureModulator(nn.Module):
 
     def forward(self, edge_features):
         return self.mlp(edge_features)
+```

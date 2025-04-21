@@ -134,3 +134,4 @@ class CKGConv(MessagePassing):
         Update function: apply linear transformation to aggregated messages
         """
         return self.linear(aggr_out)
+```

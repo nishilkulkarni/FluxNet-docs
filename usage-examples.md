@@ -40,6 +40,7 @@ model = FluxNet(
 # Forward pass
 output = model(x, x_pe, edge_index, edge_attr, edge_pe)
 print(output.shape)  # Should be [3, 64]
+```
 
 ## Creating a Complete GNN Model
 
@@ -150,3 +151,4 @@ def train(epoch):
 for epoch in range(1, 101):
     loss = train(epoch)
     print(f'Epoch: {epoch}, Loss: {loss:.4f}')
+```

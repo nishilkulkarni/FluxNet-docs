@@ -7,7 +7,7 @@ nav_order: 3
 
 # FluxNet
 
-The `FluxNet` class combines `CKGConv` with a GATv2 attention mechanism to create a comprehensive continuos kernel graph convolution layer.
+The `FluxNet` class combines `CKGConv` with a GATv2 attention mechanism to create a comprehensive continuos kernel graph convolution block.
 
 ## Purpose
 - Integrates `CKGConv` with GATv2Conv attention
@@ -152,3 +152,4 @@ class FluxNet(nn.Module):
         x = self.norm2(x)
         
         return x
+```

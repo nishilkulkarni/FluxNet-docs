@@ -26,48 +26,12 @@ This mechanism helps the model adapt to graphs with varying node degrees by appl
 
 The `FluxNet` class supports multiple normalization types:
 
-|
- Type 
-|
- Implementation 
-|
- Description 
-|
-|
-------
-|
----------------
-|
--------------
-|
-|
-`batch`
-|
- BatchNorm1d 
-|
- Normalizes across batch dimension 
-|
-|
-`layer`
-|
- LayerNorm 
-|
- Normalizes across feature dimension 
-|
-|
-`instance`
-|
- InstanceNorm1d 
-|
- Normalizes each instance independently 
-|
-|
-`none`
-|
- Identity 
-|
- No normalization is applied 
-|
+| Type | Implementation | Description |
+|------|---------------|-------------|
+| `batch` | BatchNorm1d | Normalizes across batch dimension |
+| `layer` | LayerNorm | Normalizes across feature dimension |
+| `instance` | InstanceNorm1d | Normalizes each instance independently |
+| `none` | Identity | No normalization is applied |
 
 ### When to use each type:
 
