@@ -1,7 +1,7 @@
 remote_theme: just-the-docs/just-the-docs
 title: FluxNet Documentation
 description: Documentation for FluxNet Graph Neural Network Layer
-color_scheme: dark
+color_scheme: light
 
 # Enable search
 search_enabled: true
