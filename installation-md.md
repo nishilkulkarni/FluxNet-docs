@@ -47,21 +47,9 @@ cd fluxnet
 pip install -e .
 ```
 
-## GPU Support
-
-For optimal performance with GPU acceleration:
-
-```bash
-# Ensure you have compatible CUDA drivers installed
-pip install fluxnet[cuda]
-```
-
 ## Verifying Installation
 
 ```python
-import fluxnet
-print(fluxnet.__version__)
-
 # Check GPU availability
 import torch
 print(f"CUDA available: {torch.cuda.is_available()}")
