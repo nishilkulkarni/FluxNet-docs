@@ -7,149 +7,100 @@ nav_order: 3
 
 # FluxNet
 
-The `FluxNet` class combines `CKGConv` with a GATv2 attention mechanism to create a comprehensive continuos kernel graph convolution block.
+```python
+fluxnet.FluxNet(node_in_dim, edge_in_dim, pe_dim, out_channels, 
+                ffn_hidden_dim=None, modulator_hidden_dim=64,
+                dropout=0.0, norm_type='batch', add_self_loops=True, 
+                aggr='mean', num_heads=4, use_attention=True)
+```
 
-## Purpose
-- Integrates `CKGConv` with GATv2Conv attention
-- Provides residual connections and normalization
-- Implements a feed-forward network for further feature transformation
+Combines `CKGConv` with a GATv2 attention mechanism to create a comprehensive continuous kernel graph convolution block.
 
-## Parameters
-- `node_in_dim`: Input dimension of node features
-- `edge_in_dim`: Input dimension of edge features
-- `pe_dim`: Dimension of positional encodings
-- `out_channels`: Output dimension of the convolution
-- `ffn_hidden_dim`: Hidden dimension for the feed-forward network (default: 4 * out_channels)
-- `modulator_hidden_dim`: Hidden dimension for the feature modulator (default: 64)
-- `dropout`: Dropout probability (default: 0.0)
-- `norm_type`: Normalization type ('batch', 'layer', 'instance', 'none') (default: 'batch')
-- `add_self_loops`: Whether to add self-loops to the graph (default: True)
-- `aggr`: Aggregation method (default: 'mean')
-- `num_heads`: Number of attention heads for GATv2 (default: 4)
-- `use_attention`: Whether to use the GATv2 attention mechanism (default: True)
+## Parameters:
 
-## Architecture
-1. **CKGConv Layer**: Performs the base graph convolution
-2. **Normalization**: Applies normalization (batch, layer, or instance)
-3. **GATv2 Attention**: Applies multi-head graph attention (if `use_attention=True`)
+- **node_in_dim** (`int`) – Input dimension of node features
+- **edge_in_dim** (`int`) – Input dimension of edge features
+- **pe_dim** (`int`) – Dimension of positional encodings
+- **out_channels** (`int`) – Output dimension of the convolution
+- **ffn_hidden_dim** (`int`, *optional*) – Hidden dimension for the feed-forward network. Default: `4 * out_channels`
+- **modulator_hidden_dim** (`int`, *optional*) – Hidden dimension for the feature modulator. Default: `64`
+- **dropout** (`float`, *optional*) – Dropout probability. Default: `0.0`
+- **norm_type** (`str`, *optional*) – Normalization type, one of [`'batch'`, `'layer'`, `'instance'`, `'none'`]. Default: `'batch'`
+- **add_self_loops** (`bool`, *optional*) – Whether to add self-loops to the graph. Default: `True`
+- **aggr** (`str`, *optional*) – Aggregation method. Default: `'mean'`
+- **num_heads** (`int`, *optional*) – Number of attention heads for GATv2. Default: `4`
+- **use_attention** (`bool`, *optional*) – Whether to use the GATv2 attention mechanism. Default: `True`
+
+## Inputs:
+
+- **x** (`Tensor`) – Node feature matrix of shape `[num_nodes, node_in_dim]`
+- **x_pe** (`Tensor`) – Node positional encoding matrix of shape `[num_nodes, pe_dim]`
+- **edge_index** (`LongTensor`) – Graph connectivity matrix of shape `[2, num_edges]`
+- **edge_attr** (`Tensor`) – Edge feature matrix of shape `[num_edges, edge_in_dim]`
+- **edge_pe** (`Tensor`) – Edge positional encoding matrix of shape `[num_edges, pe_dim]`
+- **batch** (`LongTensor`, *optional*) – Batch vector of shape `[num_nodes]` indicating node assignment to batch instances. Default: `None`
+
+## Returns:
+
+- **out** (`Tensor`) – Updated node feature matrix of shape `[num_nodes, out_channels]`
+
+## Architecture:
+
+`FluxNet` combines several components:
+
+1. **CKGConv Layer**: Base graph convolution operation
+2. **Normalization**: Configurable normalization applied after each major component
+3. **GATv2 Attention**: Multi-head graph attention mechanism (optional)
 4. **Feed-Forward Network**: Two-layer MLP with GELU activation
 5. **Residual Connections**: Added after each major component
-6. **Dropout**: Applied to output of attention and feed-forward network
+6. **Dropout**: Applied to outputs of attention and feed-forward network
 
-## Workflow
-1. Applies `CKGConv` to input features
-2. Applies normalization
-3. Adds residual connection if dimensions match
+## Processing Flow:
+
+1. Apply `CKGConv` to input features
+2. Apply normalization
+3. Add residual connection if dimensions match
 4. If `use_attention=True`:
-   - Applies GATv2 attention mechanism
-   - Adds residual connection with dropout
-   - Applies normalization
-5. Applies feed-forward network
-6. Adds residual connection with dropout
-7. Applies normalization
+   - Apply GATv2 attention mechanism
+   - Add residual connection with dropout
+   - Apply normalization
+5. Apply feed-forward network
+6. Add residual connection with dropout
+7. Apply final normalization
 
-## Implementation
+## Example:
 
 ```python
-class FluxNet(nn.Module):
-    """
-    Optimized CKGConv block with GATv2Conv attention mechanism.
-    """
-    def __init__(self, node_in_dim, edge_in_dim, pe_dim, out_channels,
-                 ffn_hidden_dim=None, modulator_hidden_dim=64,
-                 dropout=0.0, norm_type='batch', add_self_loops=True, 
-                 aggr='mean', num_heads=4, use_attention=True):
-        super(FluxNet, self).__init__()
-        
-        # Original CKGConv components
-        if ffn_hidden_dim is None:
-            ffn_hidden_dim = 4 * out_channels
+import torch
+from fluxnet import FluxNet
 
-        self.conv = CKGConv(
-            node_in_dim=node_in_dim,
-            edge_in_dim=edge_in_dim,
-            pe_dim=pe_dim,
-            out_channels=out_channels,
-            modulator_hidden_dim=modulator_hidden_dim,
-            dropout=dropout,
-            add_self_loops=add_self_loops,
-            aggr=aggr
-        )
-        
-        # Normalization layers
-        if norm_type == 'batch':
-            self.norm1 = nn.BatchNorm1d(out_channels)
-            self.norm2 = nn.BatchNorm1d(out_channels)
-            self.norm3 = nn.BatchNorm1d(out_channels) if use_attention else None
-        elif norm_type == 'layer':
-            self.norm1 = nn.LayerNorm(out_channels)
-            self.norm2 = nn.LayerNorm(out_channels)
-            self.norm3 = nn.LayerNorm(out_channels) if use_attention else None
-        elif norm_type == 'instance':
-            # InstanceNorm is often faster than BatchNorm for graph data
-            self.norm1 = nn.InstanceNorm1d(out_channels)
-            self.norm2 = nn.InstanceNorm1d(out_channels)
-            self.norm3 = nn.InstanceNorm1d(out_channels) if use_attention else None
-        else:  # 'none'
-            self.norm1 = nn.Identity()
-            self.norm2 = nn.Identity()
-            self.norm3 = nn.Identity() if use_attention else None
-            
-        # Self-attention module - replaced with GATv2Conv
-        self.use_attention = use_attention
-        if use_attention:
-            self.attention = GATv2Conv(
-                in_channels=out_channels,
-                out_channels=out_channels,
-                heads=num_heads,
-                dropout=dropout,
-                edge_dim=edge_in_dim + pe_dim,
-                concat=False  # Average attention heads for consistent dimensions
-            )
-        
-        # Feed-forward network
-        self.ffn = nn.Sequential(
-            Linear(out_channels, ffn_hidden_dim),
-            nn.GELU(),
-            nn.Dropout(dropout),
-            Linear(ffn_hidden_dim, out_channels)
-        )
-        
-        # Dropout
-        self.dropout = nn.Dropout(dropout)
+# Create a FluxNet layer
+model = FluxNet(
+    node_in_dim=32, 
+    edge_in_dim=16, 
+    pe_dim=8,
+    out_channels=64,
+    dropout=0.1,
+    norm_type='layer'
+)
 
-    def forward(self, x, x_pe, edge_index, edge_attr, edge_pe, batch=None):
-        # Store original input for residual connection
-        identity = x if x.size(1) == self.conv.out_channels else None
-        
-        # Apply graph convolution
-        x = self.conv(x, x_pe, edge_index, edge_attr, edge_pe, batch)
-        x = self.norm1(x)
-        
-        # Residual connection (if dimensions match)
-        if identity is not None:
-            x = x + identity
-        
-        # Apply GAT attention mechanism
-        if self.use_attention:
-            identity = x
-            # Prepare edge features for GAT
-            if edge_attr.dim() == 1:
-                edge_attr = edge_attr.unsqueeze(-1)
-            
-            # Precompute the combined edge features once
-            edge_features = torch.cat([edge_attr, edge_pe], dim=-1)
-            
-            # Apply GATv2Conv - more efficient than custom attention
-            attn_out = self.attention(x, edge_index, edge_features)
-            x = x + self.dropout(attn_out)  # Residual connection with dropout
-            x = self.norm3(x)
-        
-        # Apply FFN with residual connection
-        identity = x
-        x = self.ffn(x)
-        x = self.dropout(x) + identity  # Apply dropout before adding residual
-        x = self.norm2(x)
-        
-        return x
+# Input features
+num_nodes = 100
+num_edges = 500
+x = torch.randn(num_nodes, 32)
+x_pe = torch.randn(num_nodes, 8)
+edge_index = torch.randint(0, num_nodes, (2, num_edges))
+edge_attr = torch.randn(num_edges, 16)
+edge_pe = torch.randn(num_edges, 8)
+
+# Forward pass
+output = model(x, x_pe, edge_index, edge_attr, edge_pe)
+print(output.shape)  # [100, 64]
 ```
+
+## Notes:
+
+- When `ffn_hidden_dim` is not provided, it defaults to 4 times the `out_channels`
+- The choice of normalization type significantly impacts performance on different graph datasets
+- If `use_attention=False`, the model skips the GATv2 attention mechanism
+- For best performance with large graphs, consider using `norm_type='instance'`
