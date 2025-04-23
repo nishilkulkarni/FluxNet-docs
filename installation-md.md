@@ -42,7 +42,7 @@ pip install fluxnet
 ### From Source
 
 ```bash
-git clone https://github.com/username/fluxnet.git
+git clone https://github.com/nishilkulkarni/fluxnet.git
 cd fluxnet
 pip install -e .
 ```
